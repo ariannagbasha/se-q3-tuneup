@@ -5,11 +5,13 @@
 Use the timeit and cProfile libraries to find bad code.
 """
 
-__author__ = "???"
+__author__ = "Gabby, collabs: Shanquel & Sondos and got help from Daniel"
 
 import cProfile
 import pstats
 import functools
+import timeit
+import statistics
 
 
 def profile(func):
@@ -18,8 +20,17 @@ def profile(func):
     """
     # Be sure to review the lesson material on decorators.
     # You need to understand how they are constructed and used.
-    raise NotImplementedError("Complete this decorator function")
-
+    # Wrapping the function in additional functionality
+    def wrapper(*args, **kwargs):
+        pr = cProfile.Profile()
+        pr.enable()
+        result = func(*args, **kwargs)
+        pr.disable()
+        sort_by = 'cumulative'
+        ps = pstats.Stats(pr).sort_stats(sort_by)
+        ps.print_stats()
+        return result
+    return wrapper
 
 def read_movies(src):
     """Returns a list of movie titles."""
@@ -30,12 +41,9 @@ def read_movies(src):
 
 def is_duplicate(title, movies):
     """Returns True if title is within movies list."""
-    for movie in movies:
-        if movie.lower() == title.lower():
-            return True
-    return False
+    return title in movies
 
-
+@profile
 def find_duplicate_movies(src):
     """Returns a list of duplicate movies from a src list."""
     movies = read_movies(src)
@@ -49,8 +57,12 @@ def find_duplicate_movies(src):
 
 def timeit_helper():
     """Part A: Obtain some profiling measurements using timeit."""
-    # YOUR CODE GOES HERE
-    pass
+    num_repeats = 5
+    runs_per_repeat = 3
+    t = timeit.Timer(stmt="print(type(l))", setup="l = []")
+    result = t.repeat(repeat=num_repeats, number=runs_per_repeat)
+    time_cost = min(result) / runs_per_repeat # How many times in total 
+    print(f'Best time across {num_repeats} repeats of {runs_per_repeat} runs per repeat: {time_cost}')
 
 
 def main():
@@ -62,3 +74,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    timeit_helper()
+    
